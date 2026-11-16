@@ -14,6 +14,7 @@ model User {
   phone     String?       @unique
   email     String?       @unique
   googleSub String?       @unique
+  telegramChatId String?  @unique // Telegram chat ID for OTP delivery
   recipientName String?
   contactPhone  String?
   addressLine   String?

@@ -26,6 +26,7 @@ export default function App() {
   const t = messages[lang];
   const [slide, setSlide] = useState(0);
   const [phoneDigits, setPhoneDigits] = useState("");
+  const [telegramChatId, setTelegramChatId] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [resend, setResend] = useState(60);
@@ -160,7 +161,7 @@ export default function App() {
     const nextPhone = normalizedPhone();
     setBusy(true); setError("");
     try {
-      const response = await fetch("/api/auth/request-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: nextPhone }) });
+      const response = await fetch("/api/auth/request-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: nextPhone, telegramChatId: telegramChatId || undefined }) });
       const data: { error?: string } = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Check the phone number and try again.");
       setPhone(nextPhone); setCode(""); setResend(60); setScreen("otp");
@@ -294,6 +295,12 @@ export default function App() {
         <div className="step-progress"><i className="active"/><i/></div><div className="auth-icon"><ShieldCheck size={25}/></div>
         <h1 className="page-title">{t.phoneTitle}</h1><p className="page-subtitle">{t.phoneSub}</p>
         <label className="field-label">{t.phoneLabel}</label><div className="phone-input"><span className="country-code">+855</span><input className="text-field" autoFocus inputMode="tel" autoComplete="tel-national" placeholder="12 345 678" value={phoneDigits} onChange={(event) => setPhoneDigits(event.target.value.replace(/\D/g, "").slice(0, 9))}/></div>
+        <label className="field-label">{t.telegramLabel}</label>
+        <div className="telegram-input-row">
+          <input className="text-field" inputMode="tel" autoComplete="off" placeholder="e.g. 123456789" value={telegramChatId} onChange={(event) => setTelegramChatId(event.target.value.replace(/\D/g, "").slice(0, 12))}/>
+          <a className="button outline-button" href="https://t.me/VilChumBot" target="_blank" rel="noopener noreferrer">{t.telegramLink}<ArrowRight size={16}/></a>
+        </div>
+        <p className="telegram-help">{t.telegramHelp}</p>
         {error && <div className="error-message">{error}</div>}<button className="button gold-button full-button" disabled={busy || phoneDigits.replace(/^0/, "").length < 8} onClick={() => void requestCode()}>{busy ? <LoaderCircle className="spin" size={18}/> : t.continue}<ArrowRight size={18}/></button>
       </section>}
 

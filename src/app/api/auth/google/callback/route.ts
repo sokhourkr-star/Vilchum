@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
     const response = NextResponse.redirect(new URL("/", config.data.redirectUri));
     response.cookies.set("vilchum_session", sign(user.id), {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
       path: "/",
       maxAge: 60 * 60 * 24 * 30,

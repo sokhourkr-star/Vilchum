@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { timingSafeEqual } from "node:crypto";
 import { db } from "@/lib/db";
 import { verifiedPoints } from "@/lib/money";
 import { publicReceipt, recordTransition } from "@/lib/ledger";
@@ -17,7 +18,10 @@ const schema = z.discriminatedUnion("action", [
 class ActionError extends Error { constructor(message: string, readonly status: number) { super(message); } }
 
 function authorized(password: string | null | undefined) {
-  return Boolean(process.env.ADMIN_PASSWORD) && password === process.env.ADMIN_PASSWORD;
+  if (!password || !process.env.ADMIN_PASSWORD) return false;
+  const a = Buffer.from(password);
+  const b = Buffer.from(process.env.ADMIN_PASSWORD);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 export async function GET(request: Request) {
@@ -32,7 +36,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body: unknown = await request.json().catch(() => null);
-  const password = typeof body === "object" && body && "password" in body ? String((body as { password: unknown }).password) : null;
+  // Use header for password (consistent with GET) to avoid logging in request bodies
+  const password = request.headers.get("x-admin-password");
   if (!authorized(password)) return NextResponse.json({ error: "Admin password required." }, { status: 401 });
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Check the admin action and try again." }, { status: 400 });

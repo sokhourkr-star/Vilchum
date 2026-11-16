@@ -59,8 +59,11 @@ export async function POST(request: Request) {
   // written to the ledger; a driver's count at pickup is what credits the balance.
   // A low-confidence estimate is still saved (it is never spendable) and flagged for the user and driver.
   const estimated = estimate(checked.cans, checked.bottles);
-  const dir = path.join(process.cwd(), "uploads"); await mkdir(dir, { recursive: true });
-  const imagePath = path.join(dir, `${randomUUID()}.jpg`);
+  // Use persistent uploads directory (outside .next/standalone for production deployments)
+  const uploadsDir = process.env.UPLOADS_DIR?.trim();
+  const uploadsRoot = uploadsDir ? path.resolve(uploadsDir) : path.join(process.cwd(), "uploads");
+  await mkdir(uploadsRoot, { recursive: true });
+  const imagePath = path.join(uploadsRoot, `${randomUUID()}.jpg`);
   await writeFile(imagePath, normalized);
   try {
     const scan = await db.$transaction(async (tx) => {

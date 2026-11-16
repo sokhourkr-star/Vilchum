@@ -7,6 +7,10 @@ const strong = {
   SESSION_SECRET: "a".repeat(48),
   ADMIN_PASSWORD: "correct-horse-battery-staple",
   GEMINI_API_KEY: "test-gemini-key",
+  // Telegram configuration (recommended for production OTP delivery)
+  TELEGRAM_BOT_TOKEN: "123456789:ABCDefGhIJKlmNoPQRsTUVwxyZ",
+  TELEGRAM_WEBHOOK_SECRET: "t".repeat(48),
+  TELEGRAM_WEBHOOK_URL: "https://vilchum.example/api/telegram/webhook/t".repeat(48),
 };
 
 test("a complete production config passes", () => {

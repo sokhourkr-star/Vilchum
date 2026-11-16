@@ -52,6 +52,25 @@ export function checkEnv(env: Env, mode: string | undefined): EnvCheck {
     if (url && production && (url.protocol !== "https:" || LOCAL_HOSTS.has(url.hostname))) errors.push("GOOGLE_REDIRECT_URI must be an https URL on the public domain in production, not localhost or http.");
   }
 
+  // Telegram Bot validation (optional but recommended for production OTP delivery)
+  const telegramToken = env.TELEGRAM_BOT_TOKEN;
+  const telegramWebhookSecret = env.TELEGRAM_WEBHOOK_SECRET;
+  const telegramWebhookUrl = env.TELEGRAM_WEBHOOK_URL;
+  if (telegramToken || telegramWebhookSecret || telegramWebhookUrl) {
+    if (!telegramToken) errors.push("TELEGRAM_BOT_TOKEN is required when using Telegram integration.");
+    else if (telegramToken.length < 10 || !telegramToken.includes(":")) weak("TELEGRAM_BOT_TOKEN format looks incorrect (should be like 123456789:ABCDefGhIJKlmNoPQRsTUVwxyZ).");
+    if (!telegramWebhookSecret) errors.push("TELEGRAM_WEBHOOK_SECRET is required when using Telegram integration. Generate with: openssl rand -hex 32");
+    else if (telegramWebhookSecret.length < MIN_SECRET_LENGTH) weak(`TELEGRAM_WEBHOOK_SECRET is shorter than ${MIN_SECRET_LENGTH} characters.`);
+    if (!telegramWebhookUrl) errors.push("TELEGRAM_WEBHOOK_URL is required when using Telegram integration (e.g., https://your-domain.vercel.app/api/telegram/webhook).");
+    else {
+      let url: URL | null = null;
+      try { url = new URL(telegramWebhookUrl); } catch { errors.push("TELEGRAM_WEBHOOK_URL is not a valid URL."); }
+      if (url && production && (url.protocol !== "https:" || LOCAL_HOSTS.has(url.hostname))) errors.push("TELEGRAM_WEBHOOK_URL must be an https URL on the public domain in production, not localhost or http.");
+    }
+  } else if (production) {
+    warnings.push("Telegram integration not configured: OTP delivery will rely on SMS provider (not yet implemented) or DEV_OTP demo mode.");
+  }
+
   return { errors, warnings };
 }
 
