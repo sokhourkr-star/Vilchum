@@ -9,8 +9,8 @@ const config: NextConfig = {
   serverExternalPackages: ["sharp"],
   outputFileTracingRoot: process.cwd(),
   devIndicators: false,
-  // Produce a standalone bundle in .next/standalone for NSSM service deployment
-  output: "standalone",
+  // Produce a standalone bundle in .next/standalone for NSSM service deployment (production only)
+  output: process.env.NODE_ENV === "production" ? "standalone" : undefined,
   async headers() {
     return [
       {

@@ -21,3 +21,11 @@ uploads/
 
 # Local worktrees of other branches (e.g. obj-recognition)
 .worktrees/
+.neon
+
+# Local test files
+cookies.txt
+test_photo.jpg
+test_photo2.jpg
+test_photo3.jpg
+neon.ts
